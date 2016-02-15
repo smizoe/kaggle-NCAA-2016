@@ -1,0 +1,43 @@
+.mode csv
+.import school_name_converter.csv SchoolNameConv
+.separator "\t"
+.import revenue.tsv RevenueRaw
+.import expense.tsv ExpenseRaw
+CREATE TABLE Revenue AS
+SELECT
+  COALESCE(s.Team_Name, r.name) AS Team_Name,
+  Conference,
+  Year,
+  Ticket_Sales,
+  Contributions,
+  Rights,
+  Student_Fees,
+  School_Funds,
+  Other,
+  Total_Revenue
+FROM
+  RevenueRaw r
+LEFT OUTER JOIN
+  SchoolNameConv s
+ON
+  r.name = s.name_in_budget
+;
+
+CREATE TABLE Expense AS
+SELECT
+  COALESCE(s.Team_Name, e.name) AS Team_Name,
+  Conference,
+  Year,
+  Coaching,
+  Scholarships,
+  Building,
+  Other,
+  Total_Expense
+FROM
+  ExpenseRaw e
+LEFT OUTER JOIN
+  SchoolNameConv s
+ON
+  e.name = s.name_in_budget
+;
+
