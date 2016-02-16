@@ -13,4 +13,5 @@ do
 done
 
 ${DIR}/data_src/get_budget.sh
-
+${DIR}/data_src/get_kaggle_forum_data.sh
+${DIR}/data_src/reset_sqlite.sh
