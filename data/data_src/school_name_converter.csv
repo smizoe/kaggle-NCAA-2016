@@ -7,7 +7,7 @@ Appalachian State,Appalachian St
 Arizona State,Arizona St
 Arkansas State,Arkansas St
 Arkansas-Little Rock,Ark Little Rock
-Arkansas-Pine Bluff, Ark Pine Bluff
+Arkansas-Pine Bluff,Ark Pine Bluff
 Ball State,Ball St
 Boise State,Boise St
 California Polytechnic,Cal Poly SLO
@@ -28,7 +28,7 @@ College of Charleston,Col Charleston
 Colorado State,Colorado St
 Coppin State,Coppin St
 Delaware State,Delaware St
-East Tennessee State,East Tennessee St
+East Tennessee State,ETSU
 Eastern Illinois,E Illinois
 Eastern Kentucky,E Kentucky
 Eastern Michigan,E Michigan
@@ -40,7 +40,7 @@ Florida State,Florida St
 Fresno State,Fresno St
 Georgia Southern,Ga Southern
 Georgia State,Georgia St
-Grambling State,Grambling St
+Grambling State,Grambling
 Idaho State,Idaho St
 Illinois State,Illinois St
 Illinois-Chicago,IL Chicago
@@ -51,8 +51,8 @@ Iowa State,Iowa St
 Jackson State,Jackson St
 Jacksonville State,Jacksonville St
 Kansas State,Kansas St
-Kennesaw State,Kennesaw St
-Kent State,Kent St
+Kennesaw State,Kennesaw
+Kent State,Kent
 Long Beach State,Long Beach St
 Louisiana-Lafayette,ULL
 Louisiana-Monroe,ULM
@@ -64,7 +64,7 @@ Miami (Ohio),Miami OH
 Michigan State,Michigan St
 Middle Tennessee,MTSU
 Mississippi State,Mississippi St
-Mississippi Valley State,Mississippi Valley St
+Mississippi Valley State,MS Valley St
 Missouri State,Missouri St
 Missouri-Kansas City,Missouri KC
 Montana State,Montana St
@@ -81,28 +81,28 @@ North Carolina A&T,NC A&T
 North Carolina Asheville,UNC Asheville
 North Carolina Central,NC Central
 North Carolina Greensboro,UNC Greensboro
-North Carolina State,North Carolina St
+North Carolina State,NC State
 North Carolina Wilmington,UNC Wilmington
-North Dakota State,North Dakota St
+North Dakota State,N Dakota St
 Northern Colorado,N Colorado
 Northern Illinois,N Illinois
 Northern Kentucky,N Kentucky
-Northwestern State,Northwestern St La
+Northwestern State,Northwestern LA
 Ohio State,Ohio St
 Oklahoma State,Oklahoma St
 Oregon State,Oregon St
 Penn State,Penn St
 Portland State,Portland St
 Prairie View A&M,Prairie View
-Sacramento State,Sacramento St
+Sacramento State,CS Sacramento
 Sam Houston State,Sam Houston St
 San Diego State,San Diego St
 San Jose State,San Jose St
 Savannah State,Savannah St
-South Carolina State,South Carolina St
+South Carolina State,S Carolina St
 South Carolina Upstate,SC Upstate
-South Dakota State,South Dakota St
-Southeast Missouri State,Southeast Missouri St
+South Dakota State,S Dakota St
+Southeast Missouri State,SE Missouri St
 Southeastern Louisiana,SE Louisiana
 Southern,Southern Univ
 Southern Illinois,S Illinois
@@ -112,7 +112,7 @@ Stephen F. Austin,SF Austin
 Tennessee State,Tennessee St
 Tennessee-Chattanooga,Chattanooga
 Tennessee-Martin,TN Martin
-Texas A&M-Corpus Christi,Texas A&M
+Texas A&M-Corpus Christi,TAM C. Christi
 Texas Southern,TX Southern
 Texas State,Texas St
 Texas-Arlington,UT Arlington
