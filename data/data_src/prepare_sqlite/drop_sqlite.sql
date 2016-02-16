@@ -1,5 +1,9 @@
+DROP TABLE schoolnameconv;
+DROP TABLE TeamCoaches;
+DROP TABLE TeamConferences;
+DROP TABLE MasseyOrdinals;
+DROP TABLE MasseyOrdinals2016Thru94;
 DROP TABLE revenue;
 DROP TABLE revenueraw;
 DROP TABLE expense;
 DROP TABLE expenseraw;
-DROP TABLE schoolnameconv;

@@ -36,3 +36,9 @@ ON
   e.name = s.name_in_budget
 ;
 
+INSERT INTO MasseyOrdinals
+SELECT
+  *
+FROM
+  MasseyOrdinals2016Thru94
+;
