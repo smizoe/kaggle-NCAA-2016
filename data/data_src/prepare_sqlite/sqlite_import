@@ -1,0 +1,7 @@
+.mode csv
+.import school_name_converter.csv SchoolNameConv
+.import TeamCoaches.csv TeamCoaches
+.import TeamConferences.csv TeamConferences
+.separator "\t"
+.import revenue.tsv RevenueRaw
+.import expense.tsv ExpenseRaw

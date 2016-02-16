@@ -1,8 +1,3 @@
-.mode csv
-.import school_name_converter.csv SchoolNameConv
-.separator "\t"
-.import revenue.tsv RevenueRaw
-.import expense.tsv ExpenseRaw
 CREATE TABLE Revenue AS
 SELECT
   COALESCE(s.Team_Name, r.name) AS Team_Name,
