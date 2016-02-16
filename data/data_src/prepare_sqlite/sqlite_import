@@ -1,9 +1,9 @@
 .mode csv
 .import school_name_converter.csv SchoolNameConv
-.import TeamCoaches.csv TeamCoaches
-.import TeamConferences.csv TeamConferences
-.import massey_ordinals_2003-2015.csv MasseyOrdinals
-.import MasseyOrdinals2016ThruDay94.csv MasseyOrdinals2016Thru94
+.import TeamCoaches.csv TeamCoachesRaw
+.import TeamConferences.csv TeamConferencesRaw
+.import massey_ordinals_2003-2015.csv MasseyOrdinalsRaw
+.import MasseyOrdinals2016ThruDay94.csv MasseyOrdinals2016Thru94Raw
 .separator "\t"
 .import revenue.tsv RevenueRaw
 .import expense.tsv ExpenseRaw

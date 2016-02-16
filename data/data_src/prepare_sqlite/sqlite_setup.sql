@@ -36,9 +36,41 @@ ON
   e.name = s.name_in_budget
 ;
 
-INSERT INTO MasseyOrdinals
+INSERT INTO MasseyOrdinalsRaw
 SELECT
   *
 FROM
-  MasseyOrdinals2016Thru94
+  MasseyOrdinals2016Thru94Raw
 ;
+
+CREATE TABLE TeamConferences AS
+SELECT
+  CAST(season AS int) AS season,
+  CAST(team_id AS int) AS team_id,
+  conference
+FROM
+  TeamConferencesRaw
+;
+
+CREATE TABLE TeamCoaches AS
+SELECT
+  CAST(season AS INTEGER) AS season,
+  CAST(team_id AS INTEGER) AS team_id,
+  CAST(first_day AS INTEGER) AS first_day,
+  CAST(last_day AS INTEGER) AS last_day,
+  coach_name
+FROM
+  TeamCoachesRaw
+;
+
+CREATE TABLE MasseyOrdinals AS
+SELECT
+  CAST(season AS INTEGER) AS season,
+  CAST(rating_day_num AS INTEGER) AS rating_day_num,
+  sys_name,
+  CAST(team AS INTEGER) AS team,
+  CAST(orank AS INTEGER) AS orank
+FROM
+  MasseyOrdinalsRaw
+;
+
