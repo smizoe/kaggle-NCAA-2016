@@ -1,9 +1,9 @@
-DROP TABLE schoolnameconv;
-DROP TABLE TeamCoaches;
-DROP TABLE TeamConferences;
-DROP TABLE MasseyOrdinals;
-DROP TABLE MasseyOrdinals2016Thru94;
-DROP TABLE revenue;
-DROP TABLE revenueraw;
-DROP TABLE expense;
-DROP TABLE expenseraw;
+DROP TABLE IF EXISTS schoolnameconv;
+DROP TABLE IF EXISTS TeamCoaches;
+DROP TABLE IF EXISTS TeamConferences;
+DROP TABLE IF EXISTS MasseyOrdinals;
+DROP TABLE IF EXISTS MasseyOrdinals2016Thru94;
+DROP TABLE IF EXISTS revenue;
+DROP TABLE IF EXISTS revenueraw;
+DROP TABLE IF EXISTS expense;
+DROP TABLE IF EXISTS expenseraw;
