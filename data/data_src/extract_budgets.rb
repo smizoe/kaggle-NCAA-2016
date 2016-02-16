@@ -36,7 +36,7 @@ def makeRows(name, conference, trElemArray)
 end
 
 def extractRowsFromTable(html_doc, write_header)
-  name = textContent(html_doc.css("p.sp-subhead-profile-schoolname").first)
+  name = textContent(html_doc.css("p.sp-subhead-profile-schoolname").first).gsub(/&amp;/,'&')
   conference = textContent(html_doc.css("p.sp-subhead-profile-schoolname ~ p").first).split(": ")[-1]
   revenues = html_doc.css("table.Revenues tbody tr")
   expenses = html_doc.css("table.Expenses tbody tr")
