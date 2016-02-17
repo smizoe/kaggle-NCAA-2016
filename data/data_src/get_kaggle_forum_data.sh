@@ -16,10 +16,13 @@ https://www.kaggle.com/blobs/download/forum-message-attachment-files/3687/ThePre
 https://www.kaggle.com/blobs/download/forum-message-attachment-files/3690/GameFlowDetails.zip
 https://www.kaggle.com/blobs/download/forum-message-attachment-files/3684/TeamGeog.csv
 https://www.kaggle.com/blobs/download/forum-message-attachment-files/3685/TourneyGeog.csv
+https://www.kaggle.com/blobs/download/forum-message-attachment-files/3726/RegularSeasonDetailedResultsFixed.csv
 )
 
 for (( indx=0; indx<${#URLS[@]}; indx++))
 do
-  curl -L -O "${URLS[indx]}"
-  sleep 1
+  if ! [ -f "$(basename "${URLS[indx]}")" ] ;then
+    curl -L -O "${URLS[indx]}"
+    sleep 1
+  fi
 done

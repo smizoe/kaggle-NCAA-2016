@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS RegularSeasonDetailedResultsFixedRaw;
 DROP TABLE IF EXISTS schoolnameconv;
 DROP TABLE IF EXISTS TeamConferences;
 DROP TABLE IF EXISTS TeamConferencesRaw;
