@@ -109,17 +109,19 @@ source("functions.R")
     mutate(team_id=with(RegularSeasonDetailedResults, c(Wteam, Lteam)),
            coach=with(RegularSeasonDetailedResults,c(assign.coach(Season, Daynum, Wteam), assign.coach(Season, Daynum, Lteam))),
            season=with(RegularSeasonDetailedResults, rep(Season, times=2)),
-           Daynum=with(RegularSeasonDetailedResults, rep(Daynum, times=2))) %>%
+           Daynum=with(RegularSeasonDetailedResults, rep(Daynum, times=2)),
+           loc=with(RegularSeasonDetailedResults, c(wloc, ifelse(wloc=="H", "A", "N")))) %>%
     filter(season >= first.year) %>%
     inner_join(TeamConferences, c("season", "team_id")) %>%
     inner_join(massey.ordinals.reduced,
                c("season", team_id="team", Daynum = "rating_day_num"))
   # use coaches who experienced more than 1 team
+  save(game.stat.with.team, file="game_stat_with_team")
   with(game.stat.with.team, game.stat.with.team[["coach"]][!(coach %in% target.coaches.names)]  <- "_renamed")
-  for(label in c("coach", "conference"))
+  for(label in c("coach", "conference", "loc"))
     game.stat.with.team[[label]] <- factor(game.stat.with.team[[label]])
   ordinal.sys.names <- names(massey.ordinals.reduced)[-(1:3)]
-  sapply(selected, function(label) mutinformation(game.stat.with.team %>% select_(.dots=c(label, "conference", "coach","team_id", ordinal.sys.names)))[1,])
+  sapply(selected, function(label) mutinformation(game.stat.with.team %>% select_(.dots=c(label, "conference", "coach", "loc", "team_id", ordinal.sys.names)))[1,])
 # check which team attribute is a good predictor for game stats
 }
 
