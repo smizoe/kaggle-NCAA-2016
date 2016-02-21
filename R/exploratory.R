@@ -57,7 +57,7 @@ source("functions.R")
   coaches.exploratory %>% arrange(desc(last), desc(num.teams), desc(days)) %>% print(n=400)
 # if num.teams == 1, the coach almost belongs to the team
 # it's better to use coaches with num.teams > 1 and days  > 1540 ( 10 years)
-  coaches.exploratory %>% filter(num.teams > 1, days > 1540)
+  target.coaches.names <- (coaches.exploratory %>% filter(num.teams > 1, days > 1540))$coach_name
 }
 {
   num.ordinals.per.system <- MasseyOrdinals %>% group_by(season, sys_name) %>% summarise(num.issues=n_distinct(rating_day_num, na_rm=T))
@@ -101,7 +101,7 @@ source("functions.R")
                                te=rep(all.team, times=(final.day +1) * (final.year - first.year +1)),
                                da=rep(0:final.day,times=length(all.team)*(final.year - first.year +1))
                                ),
-                    get.massey.ordinals(se,da,te)
+                    get.massey.ordinals(se,da,te, mc.cores=num.cores)
                     )
   save(massey.ordinals.reduced, file="saved/massey_ordinals_reduced")
   load("saved/massey_ordinals_reduced")
@@ -114,6 +114,8 @@ source("functions.R")
     inner_join(TeamConferences, c("season", "team_id")) %>%
     inner_join(massey.ordinals.reduced,
                c("season", team_id="team", Daynum = "rating_day_num"))
+  # use coaches who experienced more than 1 team
+  with(game.stat.with.team, game.stat.with.team[["coach"]][!(coach %in% target.coaches.names)]  <- "_renamed")
   for(label in c("coach", "conference"))
     game.stat.with.team[[label]] <- factor(game.stat.with.team[[label]])
   ordinal.sys.names <- names(massey.ordinals.reduced)[-(1:3)]
