@@ -51,6 +51,22 @@ source("functions.R")
 # althogh members on a team completely change in 4 years, once the team is recognized as strong, it can get good members
 }
 {
+ coaches.exploratory <- TeamCoaches %>% group_by(coach_name) %>%
+  summarize(days= sum(last_day-first_day + 1),last=max(season), num.teams=n_distinct(team_id))
+  coaches.exploratory %>% arrange(desc(last), desc(days)) %>% print(n=400)
+  coaches.exploratory %>% arrange(desc(last), desc(num.teams), desc(days)) %>% print(n=400)
+# if num.teams == 1, the coach almost belongs to the team
+# it's better to use coaches with num.teams > 1 and days  > 1540 ( 10 years)
+  coaches.exploratory %>% filter(num.teams > 1, days > 1540)
+}
+{
+  num.ordinals.per.system <- MasseyOrdinals %>% group_by(season, sys_name) %>% summarise(num.issues=n_distinct(rating_day_num, na_rm=T))
+  num.available.year <- MasseyOrdinals %>% group_by(sys_name) %>% summarise(num.available=n_distinct(season,na_rm=T))
+  qplot(num.available,data=num.available.year, binwidth=1) #10 available years seem to be good
+  qplot(season,num.issues,data=num.ordinals.per.system,facets=~sys_name)
+  plot(cnt, data= num.ordinals.per.system %>% group_by(season, num.issues) %>% summarise(cnt=n_distinct(sys_name)), facets=~season)
+}
+{
   game.stats <- data.frame(won=rep(c(1,0),each=dim(RegularSeasonDetailedResults)[1]))
   mk.int.ratio <- function(numer, denom, mul=1000){as.integer(numer/as.numeric(denom) * mul)}
   stats.names <- c("score", "or", "dr", "ast", "to", "stl", "blk", "pf", "fta", "ftm", "fga", "fgm", "fga3", "fgm3")
@@ -76,5 +92,32 @@ source("functions.R")
 #   0.40582467
 ## ftr is not there since sometimes fta == 0
 
-  game.stat.with.team <- game.stats %>% select(ftr, pf, fta, fgr3, ftm, fgm, ast, dr, score, fgr) %>% mutate(team=with(RegularSeasonDetailedResults, c(Wteam, Lteam)))
+  selected <- c("ftr", "pf", "fta", "fgr3", "ftm", "fgm", "ast", "dr", "score", "fgr")
+  first.year <- 2003 # to use massey ordinals
+  final.year <- 2015
+  all.team <- unique(TeamConferences$team_id)
+  final.day <- 154
+  massey.ordinals.reduced <- with(data.frame(se=rep(first.year:final.year, each =length(all.team) * (final.day +1)),
+                               te=rep(all.team, times=(final.day +1) * (final.year - first.year +1)),
+                               da=rep(0:final.day,times=length(all.team)*(final.year - first.year +1))
+                               ),
+                    get.massey.ordinals(se,da,te)
+                    )
+  save(massey.ordinals.reduced, file="saved/massey_ordinals_reduced")
+  load("saved/massey_ordinals_reduced")
+  game.stat.with.team <- game.stats %>% select_(.dots=selected) %>%
+    mutate(team_id=with(RegularSeasonDetailedResults, c(Wteam, Lteam)),
+           coach=with(RegularSeasonDetailedResults,c(assign.coach(Season, Daynum, Wteam), assign.coach(Season, Daynum, Lteam))),
+           season=with(RegularSeasonDetailedResults, rep(Season, times=2)),
+           Daynum=with(RegularSeasonDetailedResults, rep(Daynum, times=2))) %>%
+    filter(season >= first.year) %>%
+    inner_join(TeamConferences, c("season", "team_id")) %>%
+    inner_join(massey.ordinals.reduced,
+               c("season", team_id="team", Daynum = "rating_day_num"))
+  for(label in c("coach", "conference"))
+    game.stat.with.team[[label]] <- factor(game.stat.with.team[[label]])
+  ordinal.sys.names <- names(massey.ordinals.reduced)[-(1:3)]
+  sapply(selected, function(label) mutinformation(game.stat.with.team %>% select_(.dots=c(label, "conference", "coach","team_id", ordinal.sys.names)))[1,])
+# check which team attribute is a good predictor for game stats
 }
+
