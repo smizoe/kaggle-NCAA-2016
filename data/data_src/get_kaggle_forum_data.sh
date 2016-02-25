@@ -17,6 +17,8 @@ https://www.kaggle.com/blobs/download/forum-message-attachment-files/3690/GameFl
 https://www.kaggle.com/blobs/download/forum-message-attachment-files/3684/TeamGeog.csv
 https://www.kaggle.com/blobs/download/forum-message-attachment-files/3685/TourneyGeog.csv
 https://www.kaggle.com/blobs/download/forum-message-attachment-files/3726/RegularSeasonDetailedResultsFixed.csv
+https://www.kaggle.com/blobs/download/forum-message-attachment-files/3771/RegularSeasonDetailedResultsFixedBetter.csv
+https://www.kaggle.com/blobs/download/forum-message-attachment-files/3772/TourneyDetailedResultsFixedBetter.csv
 )
 
 for (( indx=0; indx<${#URLS[@]}; indx++))

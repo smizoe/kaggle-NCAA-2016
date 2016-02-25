@@ -4,7 +4,8 @@
 .import TeamConferences.csv TeamConferencesRaw
 .import massey_ordinals_2003-2015.csv MasseyOrdinalsRaw
 .import MasseyOrdinals2016ThruDay94.csv MasseyOrdinals2016Thru94Raw
-.import RegularSeasonDetailedResultsFixed.csv RegularSeasonDetailedResultsFixedRaw
+.import RegularSeasonDetailedResultsFixedBetter.csv RegularSeasonDetailedResultsFixedBetterRaw
+.import TourneyDetailedResultsFixedBetter.csv TourneyDetailedResultsFixedBetterRaw
 .separator "\t"
 .import revenue.tsv RevenueRaw
 .import expense.tsv ExpenseRaw

@@ -1,9 +1,11 @@
 DROP TABLE IF EXISTS RegularSeasonDetailedResultsFixedRaw;
+DROP TABLE IF EXISTS RegularSeasonDetailedResultsFixedBetterRaw;
 DROP TABLE IF EXISTS schoolnameconv;
 DROP TABLE IF EXISTS TeamConferences;
 DROP TABLE IF EXISTS TeamConferencesRaw;
 DROP TABLE IF EXISTS TeamCoaches;
 DROP TABLE IF EXISTS TeamCoachesRaw;
+DROP TABLE IF EXISTS TourneyDetailedResultsFixedBetterRaw;
 DROP TABLE IF EXISTS MasseyOrdinals;
 DROP TABLE IF EXISTS MasseyOrdinalsRaw;
 DROP TABLE IF EXISTS MasseyOrdinals2016Thru94;

@@ -36,7 +36,48 @@ SELECT
   CAST(Lblk AS INTEGER) AS Lblk,
   CAST(Lpf AS INTEGER) AS Lpf
 FROM
-  RegularSeasonDetailedResultsFixedRaw
+  RegularSeasonDetailedResultsFixedBetterRaw
+;
+
+DROP TABLE IF EXISTS TourneyDetailedResults;
+CREATE TABLE TourneyDetailedResults AS
+SELECT
+  CAST(season AS INTEGER) AS Season,
+  CAST(daynum AS INTEGER) AS Daynum,
+  CAST(wteam AS INTEGER) AS Wteam,
+  CAST(wscore AS INTEGER) AS Wscore,
+  CAST(lteam AS INTEGER) AS Lteam,
+  CAST(lscore AS INTEGER) AS Lscore,
+  wloc AS Wloc,
+  CAST(numot AS INTEGER) AS Numot,
+  CAST(wfgm AS INTEGER) AS Wfgm,
+  CAST(wfga AS INTEGER) AS Wfga,
+  CAST(wfgm3 AS INTEGER) AS Wfgm3,
+  CAST(wfga3 AS INTEGER) AS Wfga3,
+  CAST(wftm AS INTEGER) AS Wftm,
+  CAST(wfta AS INTEGER) AS Wfta,
+  CAST(wor AS INTEGER) AS Wor,
+  CAST(wdr AS INTEGER) AS Wdr,
+  CAST(wast AS INTEGER) AS Wast,
+  CAST(wto AS INTEGER) AS Wto,
+  CAST(wstl AS INTEGER) AS Wstl,
+  CAST(wblk AS INTEGER) AS Wblk,
+  CAST(wpf AS INTEGER) AS Wpf,
+  CAST(lfgm AS INTEGER) AS Lfgm,
+  CAST(lfga AS INTEGER) AS Lfga,
+  CAST(lfgm3 AS INTEGER) AS Lfgm3,
+  CAST(lfga3 AS INTEGER) AS Lfga3,
+  CAST(lftm AS INTEGER) AS Lftm,
+  CAST(lfta AS INTEGER) AS Lfta,
+  CAST(lor AS INTEGER) AS Lor,
+  CAST(ldr AS INTEGER) AS Ldr,
+  CAST(last AS INTEGER) AS Last,
+  CAST(lto AS INTEGER) AS Lto,
+  CAST(lstl AS INTEGER) AS Lstl,
+  CAST(lblk AS INTEGER) AS Lblk,
+  CAST(lpf AS INTEGER) AS Lpf
+FROM
+  TourneyDetailedResultsFixedBetterRaw
 ;
 
 CREATE TABLE Revenue AS
