@@ -1,4 +1,4 @@
-source("functions.R")
+source("initialization.R")
 
 {
 ## check if a team with a high revenue wins or not
@@ -16,7 +16,7 @@ source("functions.R")
   ggpairs(win.loss.revenue, which(names(win.loss.revenue) %in% revenue.col.names))
   with(subset(win.loss.revenue, !is.na(wins) & !is.na(total_revenue)), cor(wins, total_revenue, method="kendall"))
   non.na.win.loss.revenue <- subset(win.loss.revenue, Reduce(function(x,y) x & !is.na(get(y)), revenue.col.names, TRUE))
-  sort(sapply(revenue.col.names[-1], function(label) with(non.na.win.loss.revenue, cor(wins, get(label), method="kendall"))))
+  sort(sapply(revenue.col.names[-1], function(label) with(non.na.win.loss.revenue, cor(wins, get(label), use="complete.obs", method="kendall"))))
   sort(mutinformation(non.na.win.loss.revenue)["wins",])
 
 ## check if a team with a high expense wins or not
@@ -57,7 +57,8 @@ source("functions.R")
   coaches.exploratory %>% arrange(desc(last), desc(num.teams), desc(days)) %>% print(n=400)
 # if num.teams == 1, the coach almost belongs to the team
 # it's better to use coaches with num.teams > 1 and days  > 1540 ( 10 years)
-  target.coaches.names <- (coaches.exploratory %>% filter(num.teams > 1, days > 1540))$coach_name
+# or for each year, we need to filter by 'last' and take coaches with large num.teams and large 'days'
+  target.coaches.names <- (coaches.exploratory %>% filter(num.teams > 3, days > 1540, last==2016))$coach_name
 }
 {
   num.ordinals.per.system <- MasseyOrdinals %>% group_by(season, sys_name) %>% summarise(num.issues=n_distinct(rating_day_num, na_rm=T))
@@ -82,29 +83,31 @@ source("functions.R")
 #          fgr3          ftm          fgm          ast           dr        score          fgr          won
 #  0.0563663413 0.0576521190 0.0701691565 0.0758421555 0.0849355723 0.1346779446 0.1370217270 0.6931471806
 ## good predictors are ftr to fgr
-  correl.vec <- mclapply(stats.names, function(x) cor(game.stats$won, game.stats[[x]] ,method="kendall"), mc.cores=3)
+  correl.vec <- mclapply(stats.names, function(x) cor(game.stats$won, game.stats[[x]], use="complete.obs", method="kendall"), mc.cores=num.cores)
   correl.vec <- as.numeric(correl.vec)
   names(correl.vec) <- stats.names
   sort(correl.vec)
-#         pf          to        fga3         fga          or        fgm3         stl         blk         fta        fgr3         ftm         fgm         ast          dr         fgr
-#  -0.22409294 -0.12832937 -0.07892090 -0.07121675 -0.02110140  0.14064298  0.14116008  0.17487293  0.24901759  0.25701006  0.27398312  0.30062050  0.31296617  0.33273590  0.40394462
+
+
+#         pf          to        fga3         fga          or           ftr    fgm3         stl         blk         fta        fgr3         ftm         fgm         ast          dr         fgr
+#  -0.22409294 -0.12832937 -0.07892090 -0.07121675 -0.02110140  0.116917760.14064298  0.14116008  0.17487293  0.24901759  0.25701006  0.27398312  0.30062050  0.31296617  0.33273590  0.40394462
 #        score
 #   0.40582467
-## ftr is not there since sometimes fta == 0
 
   selected <- c("ftr", "pf", "fta", "fgr3", "ftm", "fgm", "ast", "dr", "score", "fgr")
   first.year <- 2003 # to use massey ordinals
   final.year <- 2015
   all.team <- unique(TeamConferences$team_id)
   final.day <- 154
-  massey.ordinals.reduced <- with(data.frame(se=rep(first.year:final.year, each =length(all.team) * (final.day +1)),
-                               te=rep(all.team, times=(final.day +1) * (final.year - first.year +1)),
-                               da=rep(0:final.day,times=length(all.team)*(final.year - first.year +1))
-                               ),
-                    get.massey.ordinals(se,da,te, mc.cores=num.cores)
-                    )
-  save(massey.ordinals.reduced, file="saved/massey_ordinals_reduced")
-  load("saved/massey_ordinals_reduced")
+#  massey.ordinals.reduced <- with(data.frame(se=rep(first.year:final.year, each =length(all.team) * (final.day +1)),
+#                               te=rep(all.team, times=(final.day +1) * (final.year - first.year +1)),
+#                               da=rep(0:final.day,times=length(all.team)*(final.year - first.year +1))
+#                               ),
+#                    get.massey.ordinals(se,da,te, mc.cores=num.cores)
+#                    )
+#  save(massey.ordinals.reduced, file="saved/massey_ordinals_reduced")
+#  load("saved/massey_ordinals_reduced")
+  seed.info <- TourneySeeds %>% mutate(seed = ifelse(substring(Seed, nchar(Seed)) %in% c("a", "b"), "play-in", Seed)) %>% select(Season, Team, seed)
   game.stat.with.team <- game.stats %>% select_(.dots=selected) %>%
     mutate(team_id=with(RegularSeasonDetailedResults, c(Wteam, Lteam)),
            coach=with(RegularSeasonDetailedResults,c(assign.coach(Season, Daynum, Wteam), assign.coach(Season, Daynum, Lteam))),
@@ -114,14 +117,33 @@ source("functions.R")
     filter(season >= first.year) %>%
     inner_join(TeamConferences, c("season", "team_id")) %>%
     inner_join(massey.ordinals.reduced,
-               c("season", team_id="team", Daynum = "rating_day_num"))
+               c("season", team_id="team", Daynum = "rating_day_num")) %>%
+    left_join(seed.info, c(season = "Season", team_id="Team"))
   # use coaches who experienced more than 1 team
-  save(game.stat.with.team, file="game_stat_with_team")
+  save(game.stat.with.team, file="saved/game_stat_with_team")
+  load("saved/game_stat_with_team")
   with(game.stat.with.team, game.stat.with.team[["coach"]][!(coach %in% target.coaches.names)]  <- "_renamed")
-  for(label in c("coach", "conference", "loc"))
+  with(game.stat.with.team, game.stat.with.team[["seed"]][is.na(seed)] <- "non-tourney")
+  char.features <- c("coach", "conference", "loc", "seed")
+  for(label in char.features)
     game.stat.with.team[[label]] <- factor(game.stat.with.team[[label]])
   ordinal.sys.names <- names(massey.ordinals.reduced)[-(1:3)]
-  sapply(selected, function(label) mutinformation(game.stat.with.team %>% select_(.dots=c(label, "conference", "coach", "loc", "team_id", ordinal.sys.names)))[1,])
+  correlation.target.features <- c(char.features, "team_id", ordinal.sys.names)
+  mutinfo.game.stats <- t(sapply(selected, function(label) mutinformation(game.stat.with.team %>% select_(.dots=c(label, correlation.target.features)))[1,]))
+  mutinfo.ordinals <- t(sapply(names(massey.ordinals.reduced)[-(1:3)], function(label){mutinformation(game.stat.with.team %>% select_(.dots=c(label, char.features, "team_id", selected)))[1,]}))
+  correl.game.stats <- as.data.table(
+                         t(matrix(mcmapply(function(label, feature) cor(game.stat.with.team[[label]], game.stat.with.team[[feature]], use="complete.obs", method="kendall"),
+                                           rep(selected, each=length(ordinal.sys.names)), ordinal.sys.names, mc.cores=num.cores), nrow=length(ordinal.sys.names)))
+                         )
+  names(correl.game.stats) <- ordinal.sys.names
+  row.names(correl.game.stats) <- selected
+  save(mutinfo.game.stats, mutinfo.ordinals, correl.game.stats, file="saved/game_stats_var_importance")
+  load("saved/game_stats_var_importance")
 # check which team attribute is a good predictor for game stats
+  qplot(x=against, y=value, data=as.data.table(mutinfo.game.stats/mutinfo.game.stats[,"ftr"]) %>% select(-ftr) %>% mutate(against=row.names(mutinfo.game.stats)) %>% melt("against"), facets=~variable)
+  qplot(x=variable, y= value, data=as.data.table(mutinfo.ordinals/mutinfo.ordinals[,1]) %>% select(-1) %>% mutate(against=rownames(mutinfo.ordinals)) %>% melt("against"), facets= ~against)+theme(axis.text.x = element_text(angle =90, hjust = 1))
+  #as a result we should use the followings to impute ordinals: coach, conference, seed, team, ftr, fgr, fgr3, score
+  qplot(x=against, y=value, data=correl.game.stats %>% mutate(against=row.names(correl.game.stats)) %>% melt("against"), facets=~variable)+theme(axis.text.x = element_text(angle =90, hjust = 1))
+# coach, ordinals and seed works well
 }
 
