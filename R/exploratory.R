@@ -140,10 +140,9 @@ source("initialization.R")
   save(mutinfo.game.stats, mutinfo.ordinals, correl.game.stats, file="saved/game_stats_var_importance")
   load("saved/game_stats_var_importance")
 # check which team attribute is a good predictor for game stats
-  qplot(x=against, y=value, data=as.data.table(mutinfo.game.stats/mutinfo.game.stats[,"ftr"]) %>% select(-ftr) %>% mutate(against=row.names(mutinfo.game.stats)) %>% melt("against"), facets=~variable)
+  qplot(x=against, y=value, data=as.data.table(mutinfo.game.stats/mutinfo.game.stats[,"ftr"]) %>% select(-ftr) %>% mutate(against=row.names(mutinfo.game.stats)) %>% melt("against"), facets=~variable)+theme(axis.text.x = element_text(angle =90, hjust = 1))
   qplot(x=variable, y= value, data=as.data.table(mutinfo.ordinals/mutinfo.ordinals[,1]) %>% select(-1) %>% mutate(against=rownames(mutinfo.ordinals)) %>% melt("against"), facets= ~against)+theme(axis.text.x = element_text(angle =90, hjust = 1))
   #as a result we should use the followings to impute ordinals: coach, conference, seed, team, ftr, fgr, fgr3, score
   qplot(x=against, y=value, data=correl.game.stats %>% mutate(against=row.names(correl.game.stats)) %>% melt("against"), facets=~variable)+theme(axis.text.x = element_text(angle =90, hjust = 1))
 # coach, ordinals and seed works well
 }
-
