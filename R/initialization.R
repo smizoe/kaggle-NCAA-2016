@@ -47,12 +47,15 @@ load.or.create("massey.ordinals.reduced", function(){
   final.year <- 2015
   all.team <- unique(TeamConferences$team_id)
   final.day <- 154
-  with(data.frame(se=rep(first.year:final.year, each =length(all.team) * (final.day +1)),
+  result <- with(data.frame(se=rep(first.year:final.year, each =length(all.team) * (final.day +1)),
                                te=rep(all.team, times=(final.day +1) * (final.year - first.year +1)),
                                da=rep(0:final.day,times=length(all.team)*(final.year - first.year +1))
                                ),
                     get.massey.ordinals(se,da,te, mc.cores=num.cores)
                     )
+  for(name in names(result)[-(1:3)])
+    result[[name]] <- factor(result[[name]], levels=sort(unique(result[[name]])), ordered=T)
+  result
 })
 
 valid.raw.data.for <- function(tournament.year){
