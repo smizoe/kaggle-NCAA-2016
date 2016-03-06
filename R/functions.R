@@ -119,3 +119,37 @@ mk.rename.nse <- function(original, prefix=NULL, suffix=NULL, sep="."){
   names(original) <- new.name
   original
 }
+
+##
+## - pos.neg.feature.list: a list of features that should take
+##   + 1 (or positive value) when it is winners' value
+##   + -1 (or negative value) when losers'
+##   + and 0 when it's irrelevant.
+##   each element is a character vector of length 2, whose 1st element specifies
+##   the name of winners' feature and the other specifies that of losers'.
+##   e.g., if an element in list is c("Wteam", "Lteam"), it means
+##   we would like to get a set of features which takes 1 when it appears as "Wteam"
+##   and the other values when it does not.
+mk.matrix.from.raw <- function(data, pos.neg.feature.list){
+  result <- data
+  for(name in names(pos.neg.feature.list)) {
+    vec <- pos.neg.feature.list[[name]]
+## if one feature appears in both side (winner and loser),
+## we put 0 in the corresponding feature
+    w.name <- vec[1]
+    l.name <- vec[2]
+    values <- Filter(function(x) !is.na(x), unique(data[[w.name]], data[[l.name]]))
+    new.features <- sapply(values, function(val){
+             w.data <- data[[w.name]]
+             l.data <- data[[l.name]]
+             is.winners <- w.data == val & l.data != val
+             is.losers  <- l.data == val & w.data != val
+             use.raw <- typeof(w.data) == "double"
+             ifelse(is.winners, if(use.raw) w.data else 1 ,
+                    ifelse(is.losers, if(use.raw) l.data else -1 , 0) )
+    })
+    colnames(new.features) <- paste(name, as.character(values), sep="_")
+    result <- cbind(result, new.features)
+  }
+  result
+}
