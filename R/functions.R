@@ -106,8 +106,15 @@ load.or.create <- function(obj.name, fun, filename=gsub("\\.", "_", obj.name), s
   }
 }
 
-mk.rename.nse <- function(original, prefix="", suffix="", sep="."){
-  new.name <- paste(prefix, original, suffix, sep=sep)
+mk.rename.nse <- function(original, prefix=NULL, suffix=NULL, sep="."){
+  if(all(is.null(c(prefix, suffix))))
+    new.name <- original
+  if(!is.null(prefix) && !is.null(suffix))
+    new.name <- paste(prefix, original, suffix, sep=sep)
+  if(is.null(prefix))
+    new.name <- paste(original, suffix, sep=sep)
+  if(is.null(suffix))
+    new.name <- paste(prefix, original, sep=sep)
   names(original) <- new.name
   original
 }

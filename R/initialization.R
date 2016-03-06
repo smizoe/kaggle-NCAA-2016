@@ -59,23 +59,31 @@ load.or.create("massey.ordinals.reduced", function(){
 })
 
 valid.raw.data.for <- function(tournament.year){
-  game.results <- union(
+  game.results.raw <- union(
     RegularSeasonDetailedResults %>% filter(Season <= tournament.year),
     TourneyDetailedResults %>% filter(Season < tournament.year)
-  ) %>% inner_join(full.coach.table %>% rename(Wteam=Team), c("Season", "Daynum", "Wteam")) %>% # add coach names to both team won and lost
-      rename(W.Coach=Coach) %>%
-      inner_join(full.coach.table %>% rename(Lteam=Team), c("Season", "Daynum", "Lteam")) %>%
-      rename(L.Coach=Coach) %>%
-      left_join(massey.ordinals.reduced %>% rename(Season=season, Daynum=rating_day_num, Wteam=team), c("Season", "Daynum", "Wteam"), copy=T) %>% # add ordinals to them
-      rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, "W")) %>%
-      left_join(massey.ordinals.reduced %>% rename(Season=season, Daynum=rating_day_num, Lteam=team), c("Season", "Daynum", "Lteam"), copy=T) %>%
-      rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, "L"))
+  )
+  game.results <- with(game.results.raw,
+                       data.table(won.by.1=as.numeric(Wteam < Lteam), Season=Season, Daynum=Daynum, wloc=wloc, Team.1=pmin(Wteam, Lteam), Team.2=pmax(Wteam, Lteam)))
+  stats <- c("score", "fgm", "fga", "fgm3", "fga3", "ftm", "fta", "or", "dr", "ast", "to", "stl", "blk", "pf")
+  for(name in stats){
+    game.results[[paste(name,"1", sep=".")]] <- with(game.results.raw, ifelse(game.results$won.by.1 == 1, get(paste("W", name,sep="")), get(paste("L", name, sep=""))))
+    game.results[[paste(name,"2", sep=".")]] <- with(game.results.raw, ifelse(game.results$won.by.1 == 0, get(paste("W", name,sep="")), get(paste("L", name, sep=""))))
+  }
+  game.results <- game.results %>% inner_join(full.coach.table %>% rename(Team.1=Team), c("Season", "Daynum", "Team.1")) %>% # add coach names to both team won and lost
+      rename(Coach.1=Coach) %>%
+      inner_join(full.coach.table %>% rename(Team.2=Team), c("Season", "Daynum", "Team.2")) %>%
+      rename(Coach.2=Coach) %>%
+      left_join(massey.ordinals.reduced %>% rename(Season=season, Daynum=rating_day_num, Team.1=team), c("Season", "Daynum", "Team.1"), copy=T) %>% # add ordinals to them
+      rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, suffix="1")) %>%
+      left_join(massey.ordinals.reduced %>% rename(Season=season, Daynum=rating_day_num, Team.2=team), c("Season", "Daynum", "Team.2"), copy=T) %>%
+      rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, suffix="2"))
   revenue.and.expense <- Teams %>% inner_join(Revenue %>% select(-conference), c("Team_Name")) %>% inner_join(Expense %>% select(-conference), c("Team_Name", "year"))
   revenue.colnames <- names(Revenue)[-(1:3)]
   expense.colnames <- names(Expense)[-(1:3)]
   r.e.colnames <- c(revenue.colnames, expense.colnames)
-  game.results %>% left_join(revenue.and.expense %>% rename(Wteam=Team_Id, Season=year), c("Wteam", "Season")) %>%
-    rename_(.dots=mk.rename.nse(r.e.colnames, "W")) %>%
-      left_join(revenue.and.expense %>% rename(Lteam=Team_Id, Season=year), c("Lteam", "Season")) %>%
-      rename_(.dots=mk.rename.nse(r.e.colnames, "L"))
+  game.results %>% left_join(revenue.and.expense %>% rename(Team.1=Team_Id, Season=year), c("Team.1", "Season")) %>%
+    rename_(.dots=mk.rename.nse(r.e.colnames, suffix="1")) %>%
+      left_join(revenue.and.expense %>% rename(Team.2=Team_Id, Season=year), c("Team.2", "Season")) %>%
+      rename_(.dots=mk.rename.nse(r.e.colnames, suffix="2"))
 }
