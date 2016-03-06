@@ -130,9 +130,8 @@ mk.rename.nse <- function(original, prefix=NULL, suffix=NULL, sep="."){
 ##   e.g., if an element in list is c("Wteam", "Lteam"), it means
 ##   we would like to get a set of features which takes 1 when it appears as "Wteam"
 ##   and the other values when it does not.
-mk.matrix.from.raw <- function(data, pos.neg.feature.list){
-  result <- data
-  for(name in names(pos.neg.feature.list)) {
+mk.matrix.from.raw <- function(data, pos.neg.feature.list,cores=3){
+  result.list <- mclapply(names(pos.neg.feature.list), function(name){
     vec <- pos.neg.feature.list[[name]]
 ## if one feature appears in both side (winner and loser),
 ## we put 0 in the corresponding feature
@@ -149,7 +148,7 @@ mk.matrix.from.raw <- function(data, pos.neg.feature.list){
                     ifelse(is.losers, if(use.raw) l.data else -1 , 0) )
     })
     colnames(new.features) <- paste(name, as.character(values), sep="_")
-    result <- cbind(result, new.features)
-  }
-  result
+    new.features
+  }, mc.cores=cores)
+  Reduce(function(acc, that) cbind(acc, that), result.list, data)
 }
