@@ -10,9 +10,17 @@ source("initialization.R")
   win.loss$wins[is.na(win.loss$wins)] <- 0
   win.loss$losses[is.na(win.loss$losses)] <- 0
 
+  raw.revenue.cols <- names(Revenue)[-(1:3)]
   win.loss.revenue <-  win.loss %>% full_join(Revenue, by = c("Team_Name", "Season"="year"))
-  win.loss.revenue <- add.z.scores(win.loss.revenue, c("ticket_sales", "contributions", "rights", "student_fees", "school_funds", "other", "total_revenue"), "Season")
-  revenue.col.names <- c("wins","losses", "ticket_sales", "contributions", "rights", "student_fees", "school_funds", "other", "total_revenue", "ticket_sales.z", "contributions.z", "rights.z", "student_fees.z", "school_funds.z", "other.z", "total_revenue.z")
+  win.loss.revenue <- add.z.scores(win.loss.revenue, raw.revenue.cols, "Season")
+
+  freq <- discretize(win.loss.revenue %>% select_(.dots=raw.revenue.cols))
+  names(freq) <- paste(raw.revenue.cols,"freq", sep=".")
+  width <- discretize(win.loss.revenue %>% select_(.dots=raw.revenue.cols), disc="equalwidth")
+  names(width) <- paste(raw.revenue.cols, "width", sep=".")
+  win.loss.revenue <- cbind(win.loss.revenue, freq, width)
+
+  revenue.col.names <- c("wins","losses", raw.revenue.cols, paste(raw.revenue.cols, "z", sep="."), paste(raw.revenue.cols, "freq", sep="."), paste(raw.revenue.cols, "width", sep="."))
   ggpairs(win.loss.revenue, which(names(win.loss.revenue) %in% revenue.col.names))
   with(subset(win.loss.revenue, !is.na(wins) & !is.na(total_revenue)), cor(wins, total_revenue, method="kendall"))
   non.na.win.loss.revenue <- subset(win.loss.revenue, Reduce(function(x,y) x & !is.na(get(y)), revenue.col.names, TRUE))
@@ -20,9 +28,17 @@ source("initialization.R")
   sort(mutinformation(non.na.win.loss.revenue)["wins",])
 
 ## check if a team with a high expense wins or not
+  raw.expense.cols <- names(Expense)[-(1:3)]
   win.loss.expense <- win.loss %>% full_join(Expense, by=c("Team_Name", "Season"="year"))
   win.loss.expense <- add.z.scores(win.loss.expense, c("coaching", "scholarships", "building", "others", "total_expense"), "Season")
-  expense.col.names <- c("wins" , "losses", "coaching", "scholarships", "building", "others", "total_expense", "coaching.z", "scholarships.z", "building.z", "others.z", "total_expense.z")
+
+  freq <- discretize(win.loss.expense %>% select_(.dots=raw.expense.cols))
+  names(freq) <- paste(raw.expense.cols,"freq", sep=".")
+  width <- discretize(win.loss.expense %>% select_(.dots=raw.expense.cols), disc="equalwidth")
+  names(width) <- paste(raw.expense.cols, "width", sep=".")
+  win.loss.expense <- cbind(win.loss.expense, freq, width)
+
+  expense.col.names <- c("wins" , "losses", raw.expense.cols, paste(raw.expense.cols, rep(c("z", "freq", "width"), each=length(raw.expense.cols)),sep="."))
   ggpairs(win.loss.expense, which(names(win.loss.expense) %in% expense.col.names))
   with(subset(win.loss.expense, !is.na(wins) & !is.na(total_expense)), cor(wins, total_expense, method="kendall"))
   non.na.win.loss.expense <- subset(win.loss.expense, Reduce(function(x,y) x & !is.na(get(y)), expense.col.names, TRUE))
