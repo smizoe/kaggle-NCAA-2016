@@ -77,22 +77,23 @@ get.massey.ordinals.factory <- function(available.more.than.or.eq.10.year){
 }
 
 ## df: data.frame that contains game-level data
-## targets: a character vector contains prediction target
+## targets: a list or a dataframe contains prediction target. the list must be named and the names are used in selecting features
 ## features: a list whose element is a character vector.
 ##           each element of the list is named with one of 'target',
 ##           and the vector contains the feature names to be used to predict the target
-mk.game.stats.predictor <- function(df, targets, features, max.depth=4, mc.cores=getOption("mc.cores", 2L), seed=NULL) {
-  make.model <- function(target){
-    feature.names <- features[[target]]
-    pred.formula <- as.formula(paste(target, paste(feature.names,sep=" + "),sep=" ~ "))
+mk.game.stats.predictor <- function(df, targets, features, mc.cores=getOption("mc.cores", 2L)) {
+  require(doMC)
+  registerDoMC(cores = mc.cores)
 
-    train(pred.formula, data=df[c(target, feature.names)], method="rf")
+  make.model <- function(target, name){
+    feature.names <- features[[name]]
+    pred.formula <- as.formula(paste(name, paste(feature.names,sep=" + "),sep=" ~ "))
+    data <- df[feature.names]
+    data[[name]] <- target
+    train(pred.formula, data=data, method="rf")
   }
-  if(!is.null(seed)){
-    set.seed(seed, "L'Ecuyer")
-    mc.reset.stream()
-  }
-  mclapply(targets, make.model, mc.cores=mc.cores)
+
+  mapply(make.model, targets, names(targets))
 }
 
 load.or.create <- function(obj.name, fun, filename=gsub("\\.", "_", obj.name), store.dir="saved"){
