@@ -2,7 +2,7 @@ library(RSQLite)
 library(mice)
 library(infotheo)
 library(parallel)
-library(caret)
+library(caretEnsemble)
 library(GGally)
 num.cores <- 3
 drv <- dbDriver("SQLite")
@@ -70,6 +70,7 @@ valid.raw.data.for <- function(tournament.year){
     game.results[[paste(name,"1", sep=".")]] <- with(game.results.raw, ifelse(game.results$won.by.1 == 1, get(paste("W", name,sep="")), get(paste("L", name, sep=""))))
     game.results[[paste(name,"2", sep=".")]] <- with(game.results.raw, ifelse(game.results$won.by.1 == 0, get(paste("W", name,sep="")), get(paste("L", name, sep=""))))
   }
+
   game.results <- game.results %>% inner_join(full.coach.table %>% rename(Team.1=Team), c("Season", "Daynum", "Team.1")) %>% # add coach names to both team won and lost
       rename(Coach.1=Coach) %>%
       inner_join(full.coach.table %>% rename(Team.2=Team), c("Season", "Daynum", "Team.2")) %>%
@@ -78,12 +79,22 @@ valid.raw.data.for <- function(tournament.year){
       rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, suffix="1")) %>%
       left_join(massey.ordinals.reduced %>% rename(Season=season, Daynum=rating_day_num, Team.2=team), c("Season", "Daynum", "Team.2"), copy=T) %>%
       rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, suffix="2"))
+
+## revenue and expense
   revenue.and.expense <- Teams %>% inner_join(Revenue %>% select(-conference), c("Team_Name")) %>% inner_join(Expense %>% select(-conference), c("Team_Name", "year"))
   revenue.colnames <- names(Revenue)[-(1:3)]
   expense.colnames <- names(Expense)[-(1:3)]
   r.e.colnames <- c(revenue.colnames, expense.colnames)
-  game.results %>% left_join(revenue.and.expense %>% rename(Team.1=Team_Id, Season=year), c("Team.1", "Season")) %>%
+  game.results <- game.results %>% left_join(revenue.and.expense %>% rename(Team.1=Team_Id, Season=year), c("Team.1", "Season")) %>%
     rename_(.dots=mk.rename.nse(r.e.colnames, suffix="1")) %>%
       left_join(revenue.and.expense %>% rename(Team.2=Team_Id, Season=year), c("Team.2", "Season")) %>%
       rename_(.dots=mk.rename.nse(r.e.colnames, suffix="2"))
+
+## seed info
+  seed.info <- TourneySeeds %>% mutate(seed = ifelse(substring(Seed, nchar(Seed)) %in% c("a", "b"), "play-in", Seed)) %>% select(Season, Team, seed)
+  game.results <- game.results %>% left_join(seed.info %>% rename(Team.1=Team), c("Season", "Team.1")) %>% rename(Seed.1=seed) %>%
+    left_join(seed.info %>% rename(Team.2=Team), c("Season", "Team.2")) %>% rename(Seed.2=seed)
+  for(name in c("Seed.1", "Seed.2"))
+    game.results[[name]][is.na(game.results[[name]])] <- "non-seed"
+  game.results
 }
