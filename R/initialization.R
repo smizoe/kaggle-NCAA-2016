@@ -71,6 +71,7 @@ valid.raw.data.for <- function(tournament.year){
     game.results[[paste(name,"2", sep=".")]] <- with(game.results.raw, ifelse(game.results$won.by.1 == 0, get(paste("W", name,sep="")), get(paste("L", name, sep=""))))
   }
 
+## add coach and ordinals
   game.results <- game.results %>% inner_join(full.coach.table %>% rename(Team.1=Team), c("Season", "Daynum", "Team.1")) %>% # add coach names to both team won and lost
       rename(Coach.1=Coach) %>%
       inner_join(full.coach.table %>% rename(Team.2=Team), c("Season", "Daynum", "Team.2")) %>%
@@ -79,6 +80,24 @@ valid.raw.data.for <- function(tournament.year){
       rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, suffix="1")) %>%
       left_join(massey.ordinals.reduced %>% rename(Season=season, Daynum=rating_day_num, Team.2=team), c("Season", "Daynum", "Team.2"), copy=T) %>%
       rename_(.dots=mk.rename.nse(available.more.than.or.eq.10.year, suffix="2"))
+
+## restrict coach names
+  coaches.exploratory <- TeamCoaches %>% group_by(coach_name) %>%
+  summarize(days= sum(last_day-first_day + 1),last=max(season), num.teams=n_distinct(team_id))
+  target.coaches.names <- (coaches.exploratory %>% filter(num.teams > 3, days > 1540, last==2016))$coach_name
+  for(name in paste("Coach", 1:2, sep="."))
+    game.results[[name]][!(game.results[[name]] %in% target.coaches.names)] <- "non_target"
+
+## restrict ordinals to top30 (impute NA with worst value)
+  for(name in available.more.than.or.eq.10.year){
+    bound <- min(c(30, max(as.integer(massey.ordinals.reduced[[name]]), na.rm=T)+ 1))
+    for(num in 1:2){
+      target.name <- paste(name, num, sep=".")
+      game.results[[target.name]] <- as.integer(game.results[[target.name]])
+      game.results[[target.name]][is.na(game.results[[target.name]])] <- bound
+      game.results[[target.name]][game.results[[target.name]] > bound] <- bound
+    }
+  }
 
 ## revenue and expense
   revenue.and.expense <- Teams %>% inner_join(Revenue %>% select(-conference), c("Team_Name")) %>% inner_join(Expense %>% select(-conference), c("Team_Name", "year"))
@@ -94,7 +113,9 @@ valid.raw.data.for <- function(tournament.year){
   seed.info <- TourneySeeds %>% mutate(seed = ifelse(substring(Seed, nchar(Seed)) %in% c("a", "b"), "play-in", Seed)) %>% select(Season, Team, seed)
   game.results <- game.results %>% left_join(seed.info %>% rename(Team.1=Team), c("Season", "Team.1")) %>% rename(Seed.1=seed) %>%
     left_join(seed.info %>% rename(Team.2=Team), c("Season", "Team.2")) %>% rename(Seed.2=seed)
-  for(name in c("Seed.1", "Seed.2"))
-    game.results[[name]][is.na(game.results[[name]])] <- "non-seed"
+  for(name in c("Seed.1", "Seed.2")){
+    game.results[[name]][is.na(game.results[[name]])] <- "non_seed"
+    game.results[[name]] <- factor(game.results[[name]])
+  }
   game.results
 }
