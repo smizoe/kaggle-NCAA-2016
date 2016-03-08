@@ -88,7 +88,7 @@ mk.game.stats.predictor <- function(df, targets, features, mc.cores=getOption("m
   make.model <- function(target, name){
     feature.names <- features[[name]]
     pred.formula <- as.formula(paste(name, paste(feature.names,sep=" + "),sep=" ~ "))
-    data <- df[feature.names]
+    data <- df %>% select_(.dots=feature.names)
     data[[name]] <- target
     train(pred.formula, data=data, method="rf")
   }
@@ -137,18 +137,17 @@ mk.matrix.from.raw <- function(data, pos.neg.feature.list,cores=3){
 ## we put 0 in the corresponding feature
     w.name <- vec[1]
     l.name <- vec[2]
-    values <- Filter(function(x) !is.na(x), unique(data[[w.name]], data[[l.name]]))
+    values <- unique(Filter(function(x) !is.na(x), c(data[[w.name]], data[[l.name]])))
     new.features <- sapply(values, function(val){
              w.data <- data[[w.name]]
              l.data <- data[[l.name]]
              is.winners <- w.data == val & l.data != val
              is.losers  <- l.data == val & w.data != val
-             use.raw <- typeof(w.data) == "double"
-             ifelse(is.winners, if(use.raw) w.data else 1 ,
-                    ifelse(is.losers, if(use.raw) l.data else -1 , 0) )
+             ifelse(is.winners, 1 ,
+                    ifelse(is.losers, -1 , 0) )
     })
     colnames(new.features) <- paste(name, as.character(values), sep="_")
-    new.features
+    as.data.table(new.features)
   }, mc.cores=cores)
   Reduce(function(acc, that) cbind(acc, that), result.list, data)
 }
