@@ -118,7 +118,7 @@ valid.raw.data.for <- function(tournament.year){
   }
 
 ## restrict teams to stronger teams
-  target.teams <- (TourneySeeds %>% filter(Season >= 2003) %>% group <- by(Team) %>% summarize(cnt=n()) %>% filter(cnt >= 6) %>% arrange(cnt))$Team
+  target.teams <- (TourneySeeds %>% filter(Season >= 2003) %>% group_by(Team) %>% summarize(cnt=n()) %>% filter(cnt >= 6) %>% arrange(cnt))$Team
   for(name in paste("Team", 1:2, sep="."))
     game.results[[name]][!(game.results[[name]] %in% target.teams)] <- 0
   game.results
