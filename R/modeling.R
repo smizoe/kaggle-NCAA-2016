@@ -94,7 +94,7 @@ train.all <- function(data, cores=3, number=10){
   require(doMC)
   registerDoMC(cores=cores)
   control <- trainControl(method="cv", number=number, savePredictions="final", classProbs=T, summaryFunction=mnLogLoss, index=createFolds(data$won.by.1, k=number))
-  caretList(won.by.1 ~., data=data, trControl=control, methodList=c("rf", "glmboost", "svmLinear2"))
+  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "svmLinear2", "rf"))
 }
 
 run <- function(cores=3, spec=""){
