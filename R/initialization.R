@@ -117,5 +117,10 @@ valid.raw.data.for <- function(tournament.year){
     game.results[[name]][is.na(game.results[[name]])] <- "non_seed"
     game.results[[name]] <- factor(game.results[[name]])
   }
+
+## restrict teams to stronger teams
+  target.teams <- (TourneySeeds %>% filter(Season >= 2003) %>% group <- by(Team) %>% summarize(cnt=n()) %>% filter(cnt >= 6) %>% arrange(cnt))$Team
+  for(name in paste("Team", 1:2, sep="."))
+    game.results[[name]][!(game.results[[name]] %in% target.teams)] <- 0
   game.results
 }
