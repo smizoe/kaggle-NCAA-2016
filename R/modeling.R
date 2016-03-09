@@ -2,7 +2,7 @@ source("initialization.R")
 add.features <- function(data, cores=3){
   revenue.names <- names(Revenue)[-(1:3)]
   expense.names <- names(Expense)[-(1:3)]
-  discretized <- discretize(data %>% select_(.dots=paste(rep(c(revenue.names, expense.names), times=2), rep(1:2, each=length(c(revenue.names, expense.names))), sep=".")), "equalwidth")
+  discretized <- discretize(data %>% select_(.dots=paste(rep(c(revenue.names, expense.names), times=2), rep(1:2, each=length(c(revenue.names, expense.names))), sep=".")), "equalwidth", 20)
   for(name in names(discretized)){
     discretized[[name]][discretized[[name]] <0] <- NA
 ## TODO: find a better imputation
