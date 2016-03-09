@@ -115,7 +115,6 @@ valid.raw.data.for <- function(tournament.year){
     left_join(seed.info %>% rename(Team.2=Team), c("Season", "Team.2")) %>% rename(Seed.2=seed)
   for(name in c("Seed.1", "Seed.2")){
     game.results[[name]][is.na(game.results[[name]])] <- "non_seed"
-    game.results[[name]] <- factor(game.results[[name]])
   }
 
 ## restrict teams to stronger teams
