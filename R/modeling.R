@@ -99,8 +99,8 @@ train.all <- function(data, cores=3, number=10){
 
 run <- function(cores=3, spec=""){
   for(year in 2012:2015){
-    data  <- add.features(valid.raw.data.for(2012), cores)
-    model <- train.all(data.2012, cores)
+    data  <- add.features(valid.raw.data.for(year), cores)
+    model <- train.all(data, cores)
     save(data, model, file=paste("saved/models/model_and_data_", spec, year, sep=""))
     rm(data)
     rm(model)
