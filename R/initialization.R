@@ -110,7 +110,7 @@ valid.raw.data.for <- function(tournament.year){
       rename_(.dots=mk.rename.nse(r.e.colnames, suffix="2"))
 
 ## seed info
-  seed.info <- TourneySeeds %>% mutate(seed = ifelse(substring(Seed, nchar(Seed)) %in% c("a", "b"), "play-in", Seed)) %>% select(Season, Team, seed)
+  seed.info <- TourneySeeds %>% mutate(seed = ifelse(substring(Seed, nchar(Seed)) %in% c("a", "b"), "play_in", Seed)) %>% select(Season, Team, seed)
   game.results <- game.results %>% left_join(seed.info %>% rename(Team.1=Team), c("Season", "Team.1")) %>% rename(Seed.1=seed) %>%
     left_join(seed.info %>% rename(Team.2=Team), c("Season", "Team.2")) %>% rename(Seed.2=seed)
   for(name in c("Seed.1", "Seed.2")){
