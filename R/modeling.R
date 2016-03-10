@@ -93,8 +93,14 @@ add.features <- function(data, cores=3){
 train.all <- function(data, cores=3, number=10){
   require(doMC)
   registerDoMC(cores=cores)
-  control <- trainControl(method="cv", number=number, savePredictions="final", classProbs=T, summaryFunction=mnLogLoss, index=createFolds(data$won.by.1, k=number))
-  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "svmLinear2", "rf"))
+  factors <- names(data)[!grepl("\\.disc_", names(data)) & grepl("_", names(data))]
+  factors.validity <-as.data.frame(data %>% select_(.dots=factors) %>% mclapply(function(col) col %in% c(1, -1), mc.cores=cores))
+  split.part <- split(factors.validity, floor((1:dim(factors.validity)[1])/(dim(factors.validity)[1]/cores + 1)))
+  #splitter <- unlist(mclapply(split.part, function(x) Reduce(paste, x, ""), mc.cores=cores))
+  splitter <- unlist(mclapply(split.part, function(x) Reduce(function(x,y) x+y, x, 0), mc.cores=cores))
+  control <- trainControl(method="cv", number=number, savePredictions="final", classProbs=T, summaryFunction=mnLogLoss, index=createFolds(splitter, k=number, returnTrain=T), p= 0.9)
+  rm(split.part, splitter, factors, factors.validity)
+  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "nb", "rf"))
 }
 
 run <- function(cores=3, spec=""){
