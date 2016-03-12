@@ -143,11 +143,13 @@ mk.matrix.from.raw <- function(data, pos.neg.feature.list,cores=3){
              l.data <- data[[l.name]]
              is.winners <- w.data == val & l.data != val
              is.losers  <- l.data == val & w.data != val
+             filler <- 1e-5 * (rbinom(length(is.winners), 1, 0.5) - 0.5)
              ifelse(is.winners, 1 ,
-                    ifelse(is.losers, -1 , 0) )
+                    ifelse(is.losers, -1 , filler) )
     })
     colnames(new.features) <- paste(name, as.character(values), sep="_")
     as.data.table(new.features)
   }, mc.cores=cores)
   Reduce(function(acc, that) cbind(acc, that), result.list, data)
 }
+
