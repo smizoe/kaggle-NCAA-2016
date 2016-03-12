@@ -91,21 +91,25 @@ add.features <- function(data, cores=3){
 }
 
 train.all <- function(data, cores=3, number=10){
-  require(doMC)
-  registerDoMC(cores=cores)
+  require(caret)
+  require(caretEnsemble)
+
   factors <- names(data)[!grepl("\\.disc_", names(data)) & grepl("_", names(data))]
   factors.validity <-as.data.frame(data %>% select_(.dots=factors) %>% mclapply(function(col) col %in% c(1, -1), mc.cores=cores))
   split.part <- split(factors.validity, floor((1:dim(factors.validity)[1])/(dim(factors.validity)[1]/cores + 1)))
   #splitter <- unlist(mclapply(split.part, function(x) Reduce(paste, x, ""), mc.cores=cores))
   splitter <- unlist(mclapply(split.part, function(x) Reduce(function(x,y) x+y, x, 0), mc.cores=cores))
-  control <- trainControl(method="cv", number=number, savePredictions="final", classProbs=T, summaryFunction=mnLogLoss, index=createFolds(splitter, k=number, returnTrain=T), p= 0.9)
+  control <- trainControl(method="cv", number=number, savePredictions="final", classProbs=T, summaryFunction=mnLogLoss, index=createFolds(splitter, k=number, returnTrain=T), verboseIter=T, p=0.9)
   rm(split.part, splitter, factors, factors.validity)
-  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "nb", "rf"))
+  require(doParallel)
+  registerDoParallel(cores=cores)
+  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "xgbLinear", "rf"), continue_on_fail=T)
 }
 
 run <- function(cores=3, spec=""){
   for(year in 2012:2015){
     data  <- add.features(valid.raw.data.for(year), cores)
+    data <- as.data.frame(data)
     model <- train.all(data, cores)
     save(data, model, file=paste("saved/models/model_and_data_", spec, year, sep=""))
     rm(data)
