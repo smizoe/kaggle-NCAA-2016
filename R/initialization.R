@@ -57,11 +57,15 @@ load.or.create("massey.ordinals.reduced", function(){
   result
 })
 
-valid.raw.data.for <- function(tournament.year){
-  game.results.raw <- union(
-    RegularSeasonDetailedResults %>% filter(Season <= tournament.year),
-    TourneyDetailedResults %>% filter(Season < tournament.year)
-  )
+valid.raw.data.for <- function(tournament.year, is.test.data=F){
+  game.results.raw <- NULL
+  if(is.test.data)
+    game.results.raw <- TourneyDetailedResults %>% filter(Season = tournament.year)
+  else
+    game.results.raw <- union(
+      RegularSeasonDetailedResults %>% filter(Season <= tournament.year),
+      TourneyDetailedResults %>% filter(Season < tournament.year)
+    )
   game.results <- with(game.results.raw,
                        data.table(won.by.1=as.numeric(Wteam < Lteam), Season=Season, Daynum=Daynum, wloc=wloc, Team.1=pmin(Wteam, Lteam), Team.2=pmax(Wteam, Lteam)))
   stats <- c("score", "fgm", "fga", "fgm3", "fga3", "ftm", "fta", "or", "dr", "ast", "to", "stl", "blk", "pf")
