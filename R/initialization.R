@@ -1,9 +1,8 @@
 library(RSQLite)
-library(mice)
-library(infotheo)
 library(parallel)
-library(caretEnsemble)
-library(GGally)
+library(data.table)
+library(dplyr)
+library(infotheo)
 num.cores <- 3
 drv <- dbDriver("SQLite")
 con  <- dbConnect(drv, dbname="../data/database.sqlite")

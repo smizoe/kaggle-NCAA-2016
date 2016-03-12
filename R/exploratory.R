@@ -1,5 +1,7 @@
 source("initialization.R")
-
+library(mice)
+library(GGally)
+library(infotheo)
 {
 ## check if a team with a high revenue wins or not
 #games.with.revenue<- RegularSeasonCompactResults %>% inner_join(Teams,by=c("Wteam"="Team_Id")) %>% inner_join(Revenue, by=c("Team_Name", "Season"="year"))
