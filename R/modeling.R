@@ -103,7 +103,7 @@ train.all <- function(data, cores=3, number=10){
   rm(split.part, splitter, factors, factors.validity)
   require(doParallel)
   registerDoParallel(cores=cores)
-  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "xgbLinear", "rf"), continue_on_fail=T)
+  caretList(won.by.1 ~., data=data, metric="logLoss", trControl=control, methodList=c("glm", "xgbLinear", "svmLinear"), continue_on_fail=T)
 }
 
 run <- function(cores=3, spec=""){
