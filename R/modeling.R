@@ -1,16 +1,51 @@
 source("initialization.R")
-add.features <- function(data, cores=3){
-  revenue.names <- names(Revenue)[-(1:3)]
-  expense.names <- names(Expense)[-(1:3)]
-  discretized <- discretize(data %>% select_(.dots=paste(rep(c(revenue.names, expense.names), times=2), rep(1:2, each=length(c(revenue.names, expense.names))), sep=".")), "equalwidth", 20)
+
+get.discretized.label <- function(data, threshold.list, cores=3){
+  targets <- intersect(names(data), names(threshold.list))
+  result <- mclapply(targets,
+    function(colname){
+      thresholds <- threshold.list[[colname]]
+      vals <- data[[colname]]
+      sapply(vals, function(val){
+        if(is.na(val))
+          return(NA)
+        threshold.is.larger <- thresholds > val
+        if(all(threshold.is.larger))
+          1
+        else if(!any(threshold.is.larger))
+          length(threshold.is.larger)
+        else
+          which(threshold.is.larger)[1]
+      })
+    }, mc.cores=cores)
+  names(result) <- targets
+  result
+}
+
+discretize.and.rename <- function(data, targets, num.bins=20, cores=3){
+  target.columns <- paste(rep(targets, times=2), rep(1:2, each=length(targets)), sep=".")
+  requireNamespace("arules")
+  discretization.intervals <- sapply(data %>% select_(.dots=target.columns),
+                        function(col) arules::discretize(col, "interval", num.bins, onlycuts=T), simplify=F)
+  discretized <- as.data.frame(get.discretized.label(data, discretization.intervals))
+  medians <- list()
   for(name in names(discretized)){
     discretized[[name]][discretized[[name]] <0] <- NA
 ## TODO: find a better imputation
     med <- median(discretized[[name]], na.rm=T)
+    medians[[name]] <- med
     discretized[[name]][is.na(discretized[[name]])] <- med
   }
-  names(discretized) <- paste(rep(c(revenue.names, expense.names), times=2), "disc", rep(1:2, each=length(c(revenue.names, expense.names))), sep=".")
-  data <- cbind(data, discretized)
+  names(discretized) <- paste(rep(targets, times=2), "disc", rep(1:2, each=length(targets)), sep=".")
+  list(df=discretized, discretization.intervals=discretization.intervals, medians=medians)
+}
+
+add.features <- function(data, cores=3){
+  revenue.names <- names(Revenue)[-(1:3)]
+  expense.names <- names(Expense)[-(1:3)]
+  discretization.target <- c(revenue.names, expense.names)
+  disc.list <- discretize.and.rename(data, discretization.target, cores=cores)
+  data <- cbind(data, disc.list$df)
   two.side.features <- c("Coach", "Team", "Seed", paste(c(revenue.names, expense.names), "disc", sep="."), available.more.than.or.eq.10.year)
   data <- mk.matrix.from.raw(data, sapply(two.side.features, function(x) paste(x, 1:2, sep="."), simplify=F, USE.NAMES=T), cores=cores)
 ## TODO: add features
@@ -87,7 +122,11 @@ add.features <- function(data, cores=3){
   to.remove <- setdiff(names(data)[1:142], c("Season", "won.by.1"))
   to.select <- setdiff(names(data), to.remove)
   data$won.by.1 <- factor(ifelse(data$won.by.1 == 1, "win", "loss"))
-  data %>% select_(.dots=to.select)
+  result <- list()
+  result$df <- data %>% select_(.dots=to.select)
+  result$discretization.intervals <- disc.list$discretization.intervals
+  result$medians <- disc.list$medians
+  result
 }
 
 train.all <- function(data, cores=3, number=10){
@@ -108,10 +147,12 @@ train.all <- function(data, cores=3, number=10){
 
 run <- function(cores=3, spec=""){
   for(year in 2012:2015){
-    data  <- add.features(valid.raw.data.for(year), cores)
-    data <- as.data.frame(data)
+    data.and.interval <- add.features(valid.raw.data.for(year), cores)
+    data <- as.data.frame(data.and.interval$df)
+    intervals <- data.and.interval$discretization.intervals
+    medians <- data.and.interval$medians
     model <- train.all(data, cores)
-    save(data, model, file=paste("saved/models/model_and_data_", spec, year, sep=""))
+    save(data, model, intervals, medians, file=paste("saved/models/model_and_data_", spec, year, sep=""))
     rm(data)
     rm(model)
   }
